@@ -27,4 +27,5 @@
     "[powershell]": {
         "editor.formatOnSave": true,
     },
+    "markdown.extension.toc.unorderedList.marker": "*",
 }

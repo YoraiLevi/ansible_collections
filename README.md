@@ -1,34 +1,59 @@
 # ansible_windows_modules
-A collection of ansible windows modules that I deem missing for personal usage 
 
+A collection of ansible windows modules that I deem missing for personal usage
 
-# Install
+---
+
+* [ansible_windows_modules](#ansible_windows_modules)
+  * [Install](#install)
+  * [Develop](#develop)
+  * [docs/Creating Collections](#docscreating-collections)
+  * [docs/Collection structure](#docscollection-structure)
+  * [Developing modules](#developing-modules)
+    * [TODO ⏳: Executing vs Testing modules](#todo--executing-vs-testing-modules)
+      * [Testing Modules](#testing-modules)
+      * [Executing Modules (adhoc)](#executing-modules-adhoc)
+      * [Executing Modules (playbook)](#executing-modules-playbook)
+    * [TODO ⏳: Name resolution](#todo--name-resolution)
+    * [TODO ⏳: python?](#todo--python)
+    * [TODO ⏳: powershell?](#todo--powershell)
+    * [TODO ⏳: others?](#todo--others)
+    * [executing modules from command line (linux/wsl)](#executing-modules-from-command-line-linuxwsl)
+* [More Technical Information?](#more-technical-information)
+  * [Modules vs Plugins](#modules-vs-plugins)
+  * [Modules](#modules)
+    * [Install dir](#install-dir)
+    * [Info and facts](#info-and-facts)
+  * [Reference](#reference)
+* [Reading Material](#reading-material)
+  * [Testing TODO](#testing-todo)
+* [Weird behaviors](#weird-behaviors)
+
+## Install
+
 ```
 virtualenv env
 source env/bin/activate
+pip install -r requirements.txt
 ```
+
 ```
 python -m ansible galaxy collection install git+https://github.com/YoraiLevi/ansible_windows_modules.git
 ```
-```
-ansible-galaxy collection install git+https://github.com/YoraiLevi/ansible_windows_modules.git
-```
 
-# Develop
-## creating collections
-https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_creating.html#creating-collections
+## Develop
+
+## [docs/Creating Collections](https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_creating.html#creating-collections)
+
 Currently the ansible-galaxy collection command implements the following sub commands:
+command | description
+-|-
+`init`| Create a basic collection skeleton based on the default template included with Ansible or your own template.
+`build`| Create a collection artifact that can be uploaded to Galaxy or your own repository.
+`publish`| Publish a built collection artifact to Galaxy.
+`install`| Install one or more collections.
 
-`init`: Create a basic collection skeleton based on the default template included with Ansible or your own template.
-
-`build`: Create a collection artifact that can be uploaded to Galaxy or your own repository.
-
-`publish`: Publish a built collection artifact to Galaxy.
-
-`install`: Install one or more collections.
-
-## collection structure
-https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_structure.html#collection-structure
+## [docs/Collection structure](https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_structure.html#collection-structure)
 
 ```
 collection/
@@ -37,8 +62,26 @@ collection/
 ├── meta/
 │   └── runtime.yml
 ├── plugins/
+│   ├── action
+│   ├── become
+│   ├── cache
+│   ├── callback
+│   ├── cliconf
+│   ├── connection
+│   ├── filter
+│   ├── httpapi
+│   ├── inventory
+│   ├── lookup
+│   ├── module_utils
 │   ├── modules/
-│   │   └── module1.py
+│   │   ├── module1.py
+│   │   └── module1.ps1
+│   ├── netconf
+│   ├── shell
+│   ├── strategy
+│   ├── terminal
+│   ├── test
+│   ├── vars
 │   ├── inventory/
 │   └── .../
 ├── README.md
@@ -53,16 +96,28 @@ collection/
 │   └── tasks/
 └── tests/
 ```
-## developing modules
+
+## Developing modules
+
+### TODO ⏳: Executing vs Testing modules
+
+#### Testing Modules
+
+#### Executing Modules (adhoc)
+
+#### Executing Modules (playbook)
+
+### TODO ⏳: Name resolution
+
+### TODO ⏳: python?
+
+### TODO ⏳: powershell?
+
+### TODO ⏳: others?
 
 ### executing modules from command line (linux/wsl)
 
 Linux localhost connection:
-
-
-```
-ansible -m ping localhost
-```
 
 ```
 python -m ansible adhoc -m ping localhost
@@ -78,17 +133,19 @@ python -m ansible adhoc -m ping localhost
 }
 python ./windows/plugins/modules/example_module.py /tmp/args.json
 ```
+
 Windows localhost (wsl) connection, requires SSH server active and password authentication enabled:
+
 ```
 ANSIBLE_LIBRARY=./windows/plugins/modules ansible -i $(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2), -u $(/mnt/c/Windows/System32/cmd.exe /c 'echo %USERNAME%' | sed -e 's/\r//g') -k -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'" -e "ansible_shell_type=cmd" -e "ansible_become_method=runas" all -m win_ping
 ```
 
-
-https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#developing-modules
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#developing-modules>
 
 ```
 ANSIBLE_LIBRARY=./windows/plugins/modules ansible -m example_module -a 'name=hello new=true' localhost
 ```
+
 ```
 ANSIBLE_LIBRARY=./windows/plugins/modules python -m ansible adhoc -m example_module -a 'name=hello new=true' localhost
 ```
@@ -98,11 +155,16 @@ python -m ansible adhoc -m yorailevi.windows.example_module -a 'name=hello new=t
 ```
 
 windows module
+
 ```
 ANSIBLE_LIBRARY=./windows/plugins/modules ansible -i $(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2), -u $(/mnt/c/Windows/System32/cmd.exe /c 'echo %USERNAME%' | sed -e 's/\r//g') -k -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'" -e "ansible_shell_type=cmd" -e "ansible_become_method=runas" all -m example_win_ping
 ```
-# Modules vs Plugins:
-https://docs.ansible.com/ansible/latest/dev_guide/developing_locally.html#modules-and-plugins-what-is-the-difference
+
+# More Technical Information?
+
+## Modules vs Plugins
+
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_locally.html#modules-and-plugins-what-is-the-difference>
 | |  execute on  | purpose
 |-|-|-|
 Modules | target system | scripts that can be used by the Ansible API, the ansible command, or the ansible-playbook command
@@ -110,21 +172,26 @@ Plugins | the control node |  extend Ansible’s core functionality - transformi
 
 To confirm that `my_local_module` is available:  
 type `ansible-doc -t module my_local_module` to see the documentation for that module  
+
 ```
 ANSIBLE_LIBRARY=./windows/plugins/modules ansible-doc -t module example_module
 ansible-doc -t module  yorailevi.windows.example_module
 ```
+
 !!!
 Currently, the ansible-doc command can parse module documentation only from modules written in Python. If you have a module written in a programming language other than Python, please write the documentation in a Python file adjacent to the module file.
 !!!
 
+## Modules
 
-# Modules
-## Install dir
+### Install dir
+
 ```
 ansible-config dump | grep COLLECTIONS
 ```
-## Info and facts
+
+### Info and facts
+
 Info and facts modules, are just like any other Ansible Module, with a few minor requirements:
 
 1) They MUST be named <something>_info or <something>_facts, where <something> is singular.
@@ -139,24 +206,23 @@ Info and facts modules, are just like any other Ansible Module, with a few minor
 
 6) They MUST document the return fields and examples.
 
+## Reference
 
-# Reference
-[User Guide](https://docs.ansible.com/ansible/latest/user_guide/index.html)  
-[Developer Guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html)
-
-
-# Testing TODO
-https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#testing-your-newly-created-
-
-
+* [User Guide](https://docs.ansible.com/ansible/latest/user_guide/index.html)  
+* [Developer Guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html)
 
 # Reading Material
-Conventions, tips, and pitfalls: https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_best_practices.html  
-Ansible for Network Automation: https://docs.ansible.com/ansible/latest/network/index.html  
+
+## Testing TODO
+
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#testing-your-newly-created>-
+
+Conventions, tips, and pitfalls: <https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_best_practices.html>  
+Ansible for Network Automation: <https://docs.ansible.com/ansible/latest/network/index.html>  
 Ansible: Up and Running, 3rd Edition  
 
+# Weird behaviors
 
-# Weird behaviors:
 1) running with `ANSIBLE_LIBRARY-` module is resolved correctly for both linux and windows (powershell is executed for windows and py to linux) where without it only powershell is resolved
 
 ```
@@ -169,6 +235,7 @@ localhost | FAILED! => {
     "rc": 127
 }
 ```
+
 ```
 $ ANSIBLE_LIBRARY=./windows/plugins/modules ansible -m example_module localhost -a 'name=hello new=true'
 localhost | CHANGED => {

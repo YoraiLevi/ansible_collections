@@ -2,5 +2,7 @@
     "recommendations": [
         "ms-python.python",
         "ms-vscode.powershell",
+        "yzhang.markdown-all-in-one",
+        "DavidAnson.vscode-markdownlint"
     ]
 }
