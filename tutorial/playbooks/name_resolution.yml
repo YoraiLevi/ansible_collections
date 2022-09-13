@@ -1,0 +1,11 @@
+- hosts: all
+  tasks:
+  # Example without using fully qualified name:
+  - ipify_facts: 
+  # Example without using fully qualified name:
+  - name: ipify_facts FQCN
+    community.general.ipify_facts:
+    register: ip
+  - name: Print all available facts
+    debug:
+      var: ansible_facts
