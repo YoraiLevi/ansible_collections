@@ -3,6 +3,8 @@
         "ms-python.python",
         "ms-vscode.powershell",
         "yzhang.markdown-all-in-one",
-        "DavidAnson.vscode-markdownlint"
+        "davidanson.vscode-markdownlint",
+        "redhat.ansible",
+        "redhat.vscode-yaml"
     ]
 }

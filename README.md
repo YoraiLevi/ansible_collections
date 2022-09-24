@@ -5,19 +5,36 @@ A collection of ansible windows modules that I deem missing for personal usage
 ---
 
 * [ansible_windows_modules](#ansible_windows_modules)
+  * [Useful github links](#useful-github-links)
   * [Install](#install)
+  * [Playbooks](#playbooks)
+    * [TODO ⏳: Testing playboks](#todo--testing-playboks)
   * [Develop](#develop)
   * [docs/Creating Collections](#docscreating-collections)
   * [docs/Collection structure](#docscollection-structure)
-  * [Developing modules](#developing-modules)
-    * [TODO ⏳: Executing vs Testing modules](#todo--executing-vs-testing-modules)
-      * [Testing Modules](#testing-modules)
-      * [Executing Modules (adhoc)](#executing-modules-adhoc)
-      * [Executing Modules (playbook)](#executing-modules-playbook)
+  * [Developing plugins](#developing-plugins)
+    * [connection](#connection)
+      * [WSL_local](#wsl_local)
+    * [Developing modules](#developing-modules)
+      * [TODO ⏳: Testing Modules](#todo--testing-modules)
+        * [TODO ⏳: Integration tests](#todo--integration-tests)
+        * [TODO ⏳: Sanity Tests](#todo--sanity-tests)
+        * [TODO ⏳: Testing module documentation](#todo--testing-module-documentation)
+        * [Unit Tests](#unit-tests)
+      * [READ](#read)
+      * [Executing](#executing)
+        * [Executing Modules from adhoc](#executing-modules-from-adhoc)
+        * [Executing Modules from playbook](#executing-modules-from-playbook)
+        * [Developing roles](#developing-roles)
+  * [Playbooks](#playbooks-1)
+    * [Executing](#executing-1)
+      * [Executing playbook from collection](#executing-playbook-from-collection)
     * [TODO ⏳: Name resolution](#todo--name-resolution)
+    * [TODO ⏳: Search Path](#todo--search-path)
     * [TODO ⏳: python?](#todo--python)
     * [TODO ⏳: powershell?](#todo--powershell)
     * [TODO ⏳: others?](#todo--others)
+    * [module_utils](#module_utils)
     * [executing modules from command line (linux/wsl)](#executing-modules-from-command-line-linuxwsl)
 * [More Technical Information?](#more-technical-information)
   * [Modules vs Plugins](#modules-vs-plugins)
@@ -26,8 +43,14 @@ A collection of ansible windows modules that I deem missing for personal usage
     * [Info and facts](#info-and-facts)
   * [Reference](#reference)
 * [Reading Material](#reading-material)
-  * [Testing TODO](#testing-todo)
 * [Weird behaviors](#weird-behaviors)
+
+## Useful github links
+
+<https://github.com/ansible/ansible>  
+<https://github.com/ansible-collections/ansible.windows>  
+<https://github.com/ansible-collections/community.windows>  
+[list of all doc documents - https://github.com/ansible/ansible/tree/devel/docs/docsite/rst/dev_guide](https://github.com/ansible/ansible/tree/devel/docs/docsite/rst/dev_guide)
 
 ## Install
 
@@ -40,6 +63,12 @@ pip install -r requirements.txt
 ```
 python -m ansible galaxy collection install git+https://github.com/YoraiLevi/ansible_windows_modules.git
 ```
+
+## Playbooks
+
+### TODO ⏳: Testing playboks
+
+<https://docs.ansible.com/ansible/latest/reference_appendices/test_strategies.html>  
 
 ## Develop
 
@@ -97,17 +126,88 @@ collection/
 └── tests/
 ```
 
-## Developing modules
+## Developing plugins
 
-### TODO ⏳: Executing vs Testing modules
+### connection
 
-#### Testing Modules
+winrm: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/winrm.py>
+local: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/local.py>
 
-#### Executing Modules (adhoc)
+#### WSL_local
 
-#### Executing Modules (playbook)
+### Developing modules
+
+#### TODO ⏳: Testing Modules
+
+##### TODO ⏳: Integration tests
+
+Tests for playbooks, by playbooks.
+Every new `module` and `plugin` should have integration tests.
+<https://docs.ansible.com/ansible/latest/dev_guide/testing_integration.html#testing-integration>
+
+<https://github.com/ansible/ansible/tree/devel/test/integration>
+<https://github.com/ansible-collections/ansible.windows/tree/main/tests/integration>
+
+##### TODO ⏳: Sanity Tests
+
+The primary purpose of these tests is to enforce Ansible coding standards and requirements.
+<https://docs.ansible.com/ansible/latest/dev_guide/testing_sanity.html>
+
+##### TODO ⏳: Testing module documentation
+
+<https://docs.ansible.com/ansible/latest/dev_guide/testing_documentation.html#testing-module-documentation>  
+<https://docs.ansible.com/ansible/latest/community/documentation_contributions.html#testing-documentation-locally>
+
+##### Unit Tests
+
+<https://docs.ansible.com/ansible/latest/dev_guide/testing_units.html>
+<https://docs.ansible.com/ansible/latest/dev_guide/testing_units_modules.html#testing-units-modules>
+
+Unit tests are small isolated tests that target a specific library or module.
+Unit tests can be found in test/units <https://github.com/ansible/ansible/tree/devel/test/units>
+
+Normally the Ansible integration tests (which are written in Ansible YAML) provide better testing for most module functionality.
+
+When To Use Unit Tests
+There are a number of situations where unit tests are a better choice than integration tests. For example, testing things which are impossible, slow or very difficult to test with integration tests, such as:
+
+Forcing rare / strange / random situations that can’t be forced, such as specific network failures and exceptions
+
+Extensive testing of slow configuration APIs
+
+Situations where the integration tests cannot be run as part of the main Ansible continuous integration running in Azure Pipelines
+
+<https://docs.ansible.com/ansible/latest/dev_guide/testing_units_modules.html#a-complete-example>
+
+#### READ
+
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#testing-your-newly-created>  
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_testing.html#testing-collections>  
+[Testing Ansible](https://docs.ansible.com/ansible/latest/dev_guide/testing_units.html) &
+[testing_running_locally](https://docs.ansible.com/ansible/latest/dev_guide/testing_running_locally.html)  
+<https://docs.ansible.com/ansible/latest/dev_guide/testing/sanity/index.html>  
+
+#### Executing
+
+##### Executing Modules from adhoc
+
+##### Executing Modules from playbook
+
+##### Developing roles
+
+---------------------------------------------------------------
+
+## Playbooks
+
+### Executing
+
+#### Executing playbook from collection
 
 ### TODO ⏳: Name resolution
+
+How to do short-hand not fqcn names?
+
+### TODO ⏳: [Search Path](https://docs.ansible.com/ansible/latest/dev_guide/overview_architecture.html#the-ansible-search-path)  
 
 ### TODO ⏳: python?
 
@@ -115,9 +215,27 @@ collection/
 
 ### TODO ⏳: others?
 
+### [module_utils](https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_structure.html#module-utils)
+
+Importing a utility from `module_utils`
+
+```
+from ansible_collections.{namespace}.{collection}.plugins.module_utils.{util} import {something}
+```
+
+```
+#AnsibleRequires -PowerShell ansible_collections.{namespace}.{collection}.plugins.module_utils.{util}
+```
+
 ### executing modules from command line (linux/wsl)
 
 Linux localhost connection:
+
+Playbook:
+
+```
+python -m ansible playbook -i localhost, --connection=local yorailevi.tutorial.facts
+```
 
 ```
 python -m ansible adhoc -m ping localhost
@@ -212,10 +330,6 @@ Info and facts modules, are just like any other Ansible Module, with a few minor
 * [Developer Guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html)
 
 # Reading Material
-
-## Testing TODO
-
-<https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#testing-your-newly-created>-
 
 Conventions, tips, and pitfalls: <https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_best_practices.html>  
 Ansible for Network Automation: <https://docs.ansible.com/ansible/latest/network/index.html>  

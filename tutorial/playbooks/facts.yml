@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: '{{target|default("all")}}'
   tasks:
   - name: Print all available facts
     ansible.builtin.debug:
