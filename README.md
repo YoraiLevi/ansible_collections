@@ -130,7 +130,7 @@ collection/
 
 ### connection
 
-winrm: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/winrm.py>
+winrm: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/winrm.py>  
 local: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/local.py>
 
 #### WSL_local
@@ -141,12 +141,23 @@ local: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connec
 
 ##### TODO ⏳: Integration tests
 
+`python -m ansible test integration --local`
+`ansible-test windows-integration`
+
 Tests for playbooks, by playbooks.
 Every new `module` and `plugin` should have integration tests.
 <https://docs.ansible.com/ansible/latest/dev_guide/testing_integration.html#testing-integration>
 
 <https://github.com/ansible/ansible/tree/devel/test/integration>
 <https://github.com/ansible-collections/ansible.windows/tree/main/tests/integration>
+
+<https://docs.ansible.com/ansible/latest/community/collection_contributors/collection_integration_about.html>
+<https://kottapar.medium.com/ansible-role-testing-with-molecule-in-windows-subsystem-for-linux-wsl-61a828bf9174>
+<https://www.youtube.com/watch?v=FkBX7DXTDc0>
+
+<https://www.ansible.com/blog/adding-integration-tests-to-ansible-content-collections>
+
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general_windows.html#windows-integration-testing>
 
 ##### TODO ⏳: Sanity Tests
 

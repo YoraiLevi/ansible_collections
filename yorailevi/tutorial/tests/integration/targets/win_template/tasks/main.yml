@@ -1,0 +1,11 @@
+- name: call win_template_powershell
+  win_template_powershell:
+    text: "text"
+    msg: "msg"
+  register: result
+
+- name: Test the output
+  assert:
+    that:
+      - result.message == "msg"
+      - result.text == "text"
