@@ -128,8 +128,14 @@ collection/
 
 ## Developing plugins
 
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html#writing-plugins-in-python>
+
 ### connection
 
+`python -m ansible adhoc -e "ansible_shell_type=powershell" -e "ansible_become_method=runas" -i localhost, --connection yorailevi.windows.wsl_local  all -m win_copy -a "dest=C:/Users/devic/AppData/Local/Temp/tmp3iiilksi2 src=tmp3iiilksi"`
+
+ python -m ansible adhoc -e "ansible_shell_type=powershell" -e "ansible_become_method=runas" -i localhost, --connection yorailevi.windows.wsl_local  all -m win_chocolatey -a "name=notepadplusplus"
+ 
 winrm: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/winrm.py>  
 local: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/local.py>
 
@@ -266,7 +272,7 @@ python ./windows/plugins/modules/example_module.py /tmp/args.json
 Windows localhost (wsl) connection, requires SSH server active and password authentication enabled:
 
 ```
-ANSIBLE_LIBRARY=./windows/plugins/modules ansible -i $(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2), -u $(/mnt/c/Windows/System32/cmd.exe /c 'echo %USERNAME%' | sed -e 's/\r//g') -k -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'" -e "ansible_shell_type=cmd" -e "ansible_become_method=runas" all -m win_ping
+ansible -i $(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2), -u $(/mnt/c/Windows/System32/cmd.exe /c 'echo %USERNAME%' | sed -e 's/\r//g') -k -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'" -e "ansible_shell_type=cmd" -e "ansible_become_method=runas" all -m win_ping
 ```
 
 <https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html#developing-modules>

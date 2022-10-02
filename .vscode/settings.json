@@ -28,4 +28,5 @@
         "editor.formatOnSave": true,
     },
     "markdown.extension.toc.unorderedList.marker": "*",
+    "python.formatting.provider": "black",
 }
