@@ -20,8 +20,9 @@ A collection of ansible windows modules that I deem missing for personal usage
         * [TODO ⏳: Integration tests](#todo--integration-tests)
         * [TODO ⏳: Sanity Tests](#todo--sanity-tests)
         * [TODO ⏳: Testing module documentation](#todo--testing-module-documentation)
-        * [Unit Tests](#unit-tests)
+        * [Unit Tests - Unavailable on windows](#unit-tests---unavailable-on-windows)
       * [READ](#read)
+      * [Documenting modules](#documenting-modules)
       * [Executing](#executing)
         * [Executing Modules from adhoc](#executing-modules-from-adhoc)
         * [Executing Modules from playbook](#executing-modules-from-playbook)
@@ -135,7 +136,7 @@ collection/
 `python -m ansible adhoc -e "ansible_shell_type=powershell" -e "ansible_become_method=runas" -i localhost, --connection yorailevi.windows.wsl_local  all -m win_copy -a "dest=C:/Users/devic/AppData/Local/Temp/tmp3iiilksi2 src=tmp3iiilksi"`
 
  python -m ansible adhoc -e "ansible_shell_type=powershell" -e "ansible_become_method=runas" -i localhost, --connection yorailevi.windows.wsl_local  all -m win_chocolatey -a "name=notepadplusplus"
- 
+
 winrm: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/winrm.py>  
 local: <https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/connection/local.py>
 
@@ -175,7 +176,10 @@ The primary purpose of these tests is to enforce Ansible coding standards and re
 <https://docs.ansible.com/ansible/latest/dev_guide/testing_documentation.html#testing-module-documentation>  
 <https://docs.ansible.com/ansible/latest/community/documentation_contributions.html#testing-documentation-locally>
 
-##### Unit Tests
+##### Unit Tests - Unavailable on windows
+
+Windows unit testing
+Currently there is no mechanism to run unit tests for Powershell modules under Ansible CI.
 
 <https://docs.ansible.com/ansible/latest/dev_guide/testing_units.html>
 <https://docs.ansible.com/ansible/latest/dev_guide/testing_units_modules.html#testing-units-modules>
@@ -203,6 +207,11 @@ Situations where the integration tests cannot be run as part of the main Ansible
 [Testing Ansible](https://docs.ansible.com/ansible/latest/dev_guide/testing_units.html) &
 [testing_running_locally](https://docs.ansible.com/ansible/latest/dev_guide/testing_running_locally.html)  
 <https://docs.ansible.com/ansible/latest/dev_guide/testing/sanity/index.html>  
+
+#### Documenting modules
+
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_documenting.html#ansible-metadata-block>
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_shared.html#docfragments-collections>
 
 #### Executing
 
@@ -318,6 +327,8 @@ Currently, the ansible-doc command can parse module documentation only from modu
 !!!
 
 ## Modules
+
+<https://docs.ansible.com/ansible/latest/dev_guide/developing_program_flow_modules.html>
 
 ### Install dir
 

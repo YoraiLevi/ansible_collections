@@ -1,11 +1,506 @@
-- name: call win_template_powershell
+---
+- name: without required parameters
   win_template_powershell:
-    text: "text"
-    msg: "msg"
   register: result
+  ignore_errors: true
+- assert:
+    that:
+      - result is failed
+      - "'missing required arguments{{':'}}' in result.msg"
+      - "'argument_required' in result.msg"
+      - "'module_util_string_argument' in result.msg"
 
-- name: Test the output
+- name: without required_one arguments
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'one of the following is required' in result.msg"
+
+- name: without both required and required_one arguments
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.output_from_module_util == "Hello World from module util"
+      - result.argument_required == "Hello World"
+
+- name: check defaults values are set.
   assert:
     that:
-      - result.message == "msg"
-      - result.text == "text"
+      - result.argument_str == "default_string"
+      - result.argument_str_choices == "choice1"
+      - result.argment_str_nolog == "secret_password"
+      - result.argument_list_str == ["one","two","three"]
+      - result.argument_list_int == [1,2,3]
+      - result.argument_bool == false
+      - result.argument_int == 42
+      - result.argument_float == 3.14
+      # - result.argument_path == "%TEMP%" # this is evaluated to full path at runtime
+      - result.argument_raw == "this can be anything"
+      # dict
+      - result.argument_dict == None
+      - result.argument_dict_default == {"key1"{{':'}} "default_value"} # default value
+      # options - fills missing keys with option's default value (if no default specified it is None)
+      - result.argument_dict_options == None
+      - result.argument_dict_default_and_options == {"key1"{{':'}} "default_value","key2"{{':'}} None} # fills key2 with None
+      - result.argument_dict_default_and_options_with_defaults == {"key1"{{':'}} "default_value","key2"{{':'}} 5} # fills key2 with None
+      - result.argument_dict_options_with_defaults == None
+      # apply_defaults - substitutes None with dictionary full of option's default
+      - result.argument_dict_options_apply_defaults_true == {"key1"{{':'}} None,"key2"{{':'}} None}
+      - result.argument_dict_default_and_options_apply_defaults_true == {"key1"{{':'}} "default_value","key2"{{':'}} None} # fills key2 with option's default
+      - result.argument_dict_default_and_options_with_defaults_apply_defaults_true == {"key1"{{':'}} "default_value","key2"{{':'}} 5} # fills key2 with option's default
+      - result.argument_dict_options_with_defaults_apply_defaults_true == {"key1"{{':'}} "options_value","key2"{{':'}} 5}
+      # list of dicts
+      - result.argument_list_of_dicts == None
+      - result.argument_list_of_dicts_default == [None,{},{"key1"{{':'}} "default_value"}] # default value
+      # options - fills missing keys with option's default value (if no default specified it is None)
+      - result.argument_list_of_dicts_options == None
+      - result.argument_list_of_dicts_default_and_options == [None,{"key1"{{':'}} None,"key2"{{':'}} None},{"key1"{{':'}} "default_value","key2"{{':'}} None}]
+      - result.argument_list_of_dicts_options_with_defaults == None
+      - result.argument_list_of_dicts_default_and_options_with_defaults == [None,{"key1"{{':'}} "options_value","key2"{{':'}} 6},{"key1"{{':'}} "default_value","key2"{{':'}} 6}]
+      # apply_defaults - substitutes None with dictionary full of option's default
+      - result.argument_list_of_dicts_options_apply_defaults_true == None
+      - result.argument_list_of_dicts_default_and_options_apply_defaults_true == [{"key1"{{':'}} None,"key2"{{':'}} None},{"key1"{{':'}} None,"key2"{{':'}} None},{"key1"{{':'}} "default_value","key2"{{':'}} None}]
+      - result.argument_list_of_dicts_options_with_defaults_apply_defaults_true == None
+      - result.argument_list_of_dicts_default_and_options_with_defaults_apply_defaults_true == [{"key1"{{':'}} "options_value","key2"{{':'}} 6},{"key1"{{':'}} "options_value","key2"{{':'}} 6},{"key1"{{':'}} "default_value","key2"{{':'}} 6}]
+- name: demonstration of choices
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    argument_str_choices: choice2
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.argument_str_choices == "choice2"
+- name: demonstration of choices
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    argument_str_choices: choice3
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'value of argument_str_choices must be one of' in result.msg"
+      - "'Got no match for: choice3' in result.msg"
+
+- name: demonstration of mutually_exclusive - mutually_exclusive_1
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    mutually_exclusive_1: value_present
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.mutually_exclusive_1 is "value_present"
+      - result.mutually_exclusive_2 == None
+- name: demonstration of mutually_exclusive - mutually_exclusive_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    mutually_exclusive_2: value_present
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.mutually_exclusive_1 == None
+      - result.mutually_exclusive_2 == "value_present"
+- name: demonstration of mutually_exclusive - mutually_exclusive_1 and mutually_exclusive_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    mutually_exclusive_1: value_present
+    mutually_exclusive_2: value_present
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'parameters are mutually exclusive' in result.msg"
+
+- name: demonstration of required_together - required_together_1 and required_together_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_together_1: value_present
+    required_together_2: value_present
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_together_1 == "value_present"
+      - result.required_together_2 == "value_present"
+- name: demonstration of required_together - required_together_1
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_together_1: value_present
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'parameters are required together' in result.msg"
+- name: demonstration of required_together - required_together_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_together_2: value_present
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'parameters are required together' in result.msg"
+
+- name: demonstration of required_one_of
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'one of the following is required' in result.msg"
+- name: demonstration of required_one_of - required_one_of_1
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_one_of_1 == "value_present"
+- name: demonstration of required_one_of - required_one_of_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_2: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_one_of_2 == "value_present"
+- name: demonstration of required_one_of - required_one_of_1 and required_one_of_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "value_present"
+    required_one_of_2: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_one_of_1 == "value_present"
+      - result.required_one_of_2 == "value_present"
+
+- name: demonstration of required_if - A
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "A"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'but all of the following are missing' in result.msg"
+- name: demonstration of required_if - A and required_if_A
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "A"
+    required_if_A: "value_present"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'but all of the following are missing' in result.msg"
+- name: demonstration of required_if - A and required_if_AA
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "A"
+    required_if_AA: "value_present"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'but all of the following are missing' in result.msg"
+- name: demonstration of required_if - A and required_if_A and required_if_AA
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "A"
+    required_if_A: "value_present"
+    required_if_AA: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_if_condition == "A"
+      - result.required_if_A == "value_present"
+      - result.required_if_AA == "value_present"
+
+- name: demonstration of required_if - B
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "B"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'but any of the following are missing' in result.msg"
+- name: demonstration of required_if - B and required_if_B
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "B"
+    required_if_B: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_if_condition == "B"
+      - result.required_if_B == "value_present"
+- name: demonstration of required_if - B and required_if_BB
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "B"
+    required_if_BB: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_if_condition == "B"
+      - result.required_if_BB == "value_present"
+- name: demonstration of required_if - B and and required_if_B required_if_BB
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "B"
+    required_if_BB: "value_present"
+    required_if_B: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_if_condition == "B"
+      - result.required_if_B == "value_present"
+      - result.required_if_BB == "value_present"
+
+- name: demonstration of required_if - value_present
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_if_condition: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+  
+- name: demonstration of required_by - required_by_condition_1
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_condition_1: "value_present"
+  register: result
+  ignore_errors: true
+- assert:
+    that:
+      - result is failed
+      - "'missing parameter(s) required by' in result.msg"
+- name: demonstration of required_by - required_by_condition_1 and required_by_A
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_condition_1: "value_present"
+    required_by_A: "value_present"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'missing parameter(s) required by' in result.msg"
+- name: demonstration of required_by - required_by_condition_1 and required_by_B
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_condition_1: "value_present"
+    required_by_B: "value_present"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'missing parameter(s) required by' in result.msg"
+- name: demonstration of required_by - required_by_condition_1 and required_by_A and required_by_B
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_condition_1: "value_present"
+    required_by_A: "value_present"
+    required_by_B: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_by_condition_1 == "value_present"
+      - result.required_by_A == "value_present"
+      - result.required_by_B == "value_present"
+- name: demonstration of required_by - required_by_A
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_A: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_by_condition_1 == None
+      - result.required_by_A == "value_present"
+- name: demonstration of required_by - required_by_B
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_B: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_by_condition_1 == None
+      - result.required_by_B == "value_present"
+- name: demonstration of required_by - required_by_condition_2
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_condition_2: "value_present"
+  ignore_errors: true
+  register: result
+- assert:
+    that:
+      - result is failed
+      - "'missing parameter(s) required by' in result.msg"
+- name: demonstration of required_by - required_by_condition_2 and required_by_C
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_condition_2: "value_present"
+    required_by_C: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_by_condition_2 == "value_present"
+      - result.required_by_C == "value_present"
+- name: demonstration of required_by - required_by_C
+  win_template_powershell:
+    module_util_string_argument: "Hello World"
+    argument_required: "Hello World"
+    required_one_of_1: "Required One Of 1"
+    required_by_C: "value_present"
+  register: result
+- assert:
+    that:
+      - result is success
+      - result.required_by_condition_2 == None
+      - result.required_by_C == "value_present"
+    # argment_str_nolog: "Is this going to show up in the logs?" #use vvvv to see this
+
+# - name: pass paramaters to win_template_powershell
+#   win_template_powershell:
+#     module_util_string_argument : "Hello World"
+#     argument_required : "Hello World"
+#     required_one_of_1: "Required One Of 1"
+#     argument_str : "String Argument"
+#     argument_str_choices : choice1
+#     argument_list_str :
+#       - "List String 1"
+#       - "List String 2"
+#       - "List String 3"
+#     argument_list_int:
+#       - 3
+#       - 4
+#       - 5
+#     argument_dict:
+#       key1: "value1"
+#       key2: "value2"
+#       key3: "value3"
+#     argument_bool: false
+#     argument_int : 10
+#     argument_float : 14.3
+#     argument_path: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+#     argument_raw: 9
+#   register: result
+# # - name: demonstration of choices
+# # - name: demonstration of default values - dict argument
+# # - name: demonstration of default values - dict missing keys
+# # - name: demonstration of default values - list argument
+# # - name: demonstration of default values - list of dicts with missing keys (apply_defaults)
+# # - name: demonstration of mutually_exclusive
+# #     # mutually_exclusive_1
+# #     # mutually_exclusive_2
+# #     # mutually_exclusive_A
+# #     # mutually_exclusive_B
+# # - name: demonstration of required_together
+# #     # required_together_1
+# #     # required_together_2
+# # - name: demonstration of required_one_of
+# #     # required_one_of_1
+# #     # required_one_of_2
+# # - name: demonstration of required_if
+# #     # required_if_condition
+# #     # required_if_A
+# #     # required_if_AA
+# #     # required_if_B
+# #     # required_if_BB
+# # - name: demonstration of required_by
+# #     # required_by_condition_1
+# #     # required_by_A
+# #     # required_by_B
+# #     # required_by_condition_2
+# #     # required_by_C

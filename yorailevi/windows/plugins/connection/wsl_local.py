@@ -9,16 +9,40 @@ from http.server import executable
 __metaclass__ = type
 
 DOCUMENTATION = """
-    name: local
+    name: wsl_local
     short_description: execute on controller
     description:
         - This connection plugin allows ansible to execute tasks on the Ansible 'controller' instead of on a remote host.
-    author: ansible (@core)
+    author: yorailevi (@yorailevi)
     version_added: historical
     extends_documentation_fragment:
         - connection_pipelining
     notes:
         - The remote user is ignored, the user with which the ansible CLI was executed is used instead.
+    """
+"""
+python -m ansible test windows-integration --inventory ~/ansible_collections/yorailevi/windows/tests/integration/inventory.wsl  --retry-on-error --continue-on-error --exclude win_reboot
+errors:
+    module_utils_WebRequest
+    win_certificate_store
+    win_copy - bad path? C:\\ansible\\win_copy .ÅÑŚÌβŁÈ [$!@^&test(;)]\\target\\weird\\locked: Access to the path 'C:\\ansible\\win_copy .ÅÑŚÌβŁÈ [$!@^&test(;)]\\target\\weird\\locked' is denied."
+    win_dsc
+    win_find
+    win_get_url
+    win_group_membership
+    win_hostname
+    win_package
+    win_path
+    win_powershell - value is "WINDOWS" rather than: "output_types.output[22][7]['exceed'] == 'C:\\Windows'"
+    win_regedit - no failure
+    win_service
+    win_setup
+    win_share
+    win_stat
+    win_uri
+    win_user - 'group not found' - could be related to windows versions aka home/pro/server etc.
+    win_user_right -  Popen failure? user is empty. no clue, requires further investigation, issue with plugin.
+    win_whoami - failure: logon_type.startswith('Network'), actual: "logon_type": "CachedInteractive"
 """
 
 import os
@@ -47,7 +71,8 @@ if (powershell_path := shutil.which("powershell.exe")) is None:
 if (wslpath_path := shutil.which("wslpath")) is None:
     raise AnsibleError("wslpath is not in PATH")
 
-def call(cmd,cwd=None):
+
+def call(cmd, cwd=None):
     try:
         # https://docs.python.org/3/library/subprocess.html#exceptions
         return subprocess.run(
@@ -58,18 +83,23 @@ def call(cmd,cwd=None):
         )
     except OSError as e:
         raise AnsibleError("failed to run %s, %s" % (cmd, to_native(e)))
+
+
 # https://github.com/microsoft/WSL/issues/5718
-def command_prompt(cmd,cwd=str(Path(cmd_path).parent)):
+def command_prompt(cmd, cwd=str(Path(cmd_path).parent)):
     cmd = cmd_path + " /c %s" % cmd
-    return call(cmd,cwd)
+    return call(cmd, cwd)
+
 
 def wslpath(path):
     """Convert Windows path to WSL path"""
     cmd = wslpath_path + " -u '%s'" % path
     return call(cmd).stdout.strip().decode()
 
+
 def win_getuser():
-    return command_prompt("echo %USERNAME%").stdout.strip()
+    return command_prompt("echo %USERNAME%").stdout.strip().decode()
+
 
 def win_gettempdir():
     win_temp = command_prompt("echo %TEMP%").stdout.strip().decode()
@@ -78,7 +108,7 @@ def win_gettempdir():
 
 class Connection(ConnectionBase):
     """Local based connections"""
-    
+
     transport = "wsl_local"
     has_pipelining = True
 
@@ -86,13 +116,14 @@ class Connection(ConnectionBase):
 
         super(Connection, self).__init__(*args, **kwargs)
         self.default_user = win_getuser()
-        self.cwd = win_gettempdir() 
+        if not self.default_user:
+            AnsibleError("failed to get default user")
+        self.cwd = win_gettempdir()
         self.module_implementation_preferences = (".ps1", ".exe", "")
         # always_pipeline_modules usage:  https://github.com/ansible/ansible/blob/789d29e89564f6c3e09e807d889b73e029d3edd9/lib/ansible/plugins/action/__init__.py#L1118
         self.always_pipeline_modules = False
         self.has_native_async = False
         self.allow_executable = False
-
 
     def _connect(self):
         """connect to the local host; nothing to do here"""
@@ -100,6 +131,7 @@ class Connection(ConnectionBase):
         # Because we haven't made any remote connection we're running as
         # the local user, rather than as whatever is configured in remote_user.
         self._play_context.remote_user = self.default_user
+
         if not self._connected:
             display.vvv(
                 "ESTABLISH LOCAL CONNECTION FOR USER: {0}".format(
@@ -194,5 +226,5 @@ class Connection(ConnectionBase):
         self._copy(in_path, out_path)
 
     def close(self):
-        """ terminate the connection; nothing to do here """
+        """terminate the connection; nothing to do here"""
         self._connected = False

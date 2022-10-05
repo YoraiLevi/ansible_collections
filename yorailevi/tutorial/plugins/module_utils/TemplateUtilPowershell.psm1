@@ -1,5 +1,7 @@
+# ansible-doc documentation for module util is at plugins/doc_fragments/TemplateUtilPowershell.py
+# modules have to explicitly specify the fragment in their DOCUMENTATION's extends_documentation_fragment.
 
-# https://github.com/ansible-collections/ansible.windows/blob/main/plugins/module_utils/WebRequest.psm1
+# bassed on: https://github.com/ansible-collections/ansible.windows/blob/main/plugins/module_utils/WebRequest.psm1
 Function Invoke-YoraiLeviTutorialTemplateUtilPowershell {
     <#
     .SYNOPSIS
@@ -20,9 +22,9 @@ Function Invoke-YoraiLeviTutorialTemplateUtilPowershell {
         [ValidateScript({ $_.GetType().FullName -eq 'Ansible.Basic.AnsibleModule' })]
         $Module,
 
-        [Alias("msg")]
+        [Alias("module_util_string_argument")]
         [System.String]
-        $Message
+        $str
     )
 
      # Set module options for parameters unless they were explicitly passed in.
@@ -43,7 +45,7 @@ Function Invoke-YoraiLeviTutorialTemplateUtilPowershell {
         }
     }
     # code here
-    $Module.Result.message = $Message
+    $Module.Result.output_from_module_util = $str + " from module util"
 }
 Function Get-YoraiLeviTutorialTemplateUtilPowershellSpec {
     <#
@@ -59,17 +61,19 @@ Function Get-YoraiLeviTutorialTemplateUtilPowershellSpec {
         
     .NOTES
         ???
-    .LINK
-        https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general_windows.html#exposing-shared-module-options
     .EXAMPLE
         $spec = @{
-        options = @{}
+            options = @{}
         }
         $module = [Ansible.Basic.AnsibleModule]::Create($args, $spec, @(Get-YoraiLeviTutorialTemplateUtilPowershellSpec))
+    .LINK
+        https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general_windows.html#exposing-shared-module-options
+    .LINK
+        https://docs.ansible.com/ansible/latest/dev_guide/developing_program_flow_modules.html#argument-spec
     #>
     @{
         options = @{
-            msg = @{ type = 'str'; required=$true}
+            module_util_string_argument = @{ type = 'str'; required=$true}
         }
     }
 }
