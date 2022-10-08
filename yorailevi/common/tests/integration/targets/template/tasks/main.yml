@@ -1,0 +1,10 @@
+- name: Fetch info from abstract service
+  debug:
+    msg: |
+      Call the module here
+  register: result
+
+- name: Test the output
+  assert:
+    that:
+      - result.changed == false
