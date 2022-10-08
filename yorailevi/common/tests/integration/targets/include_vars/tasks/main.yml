@@ -195,9 +195,10 @@
       - "config.key2.b == 22"
       - "config.key3 == 3"
 
-- name: Include the second file again without hash_behaviour option
+- name: Include the second file again with hash_behaviour=replace option
   include_vars:
     file: vars2/hashes/hash2.yml
+    hash_behaviour: replace
 
 - name: Verify that the properties from the first file is cleared
   assert:
@@ -215,3 +216,73 @@
 - assert:
     that:
       - baz.ansible_facts.foo|type_debug != "AnsibleUnsafeText"
+
+- name: include variables with null value
+  include_vars:
+    file: vars2/merge/null_values.yml
+
+- name: Verify that the value is null
+  assert:
+    that:
+      - hash_variable is defined
+      - list_variable is defined
+      - hash_variable == None
+      - list_variable == None
+     
+- name: Merge a vars file with a hash variable
+  include_vars:
+    file: vars2/merge/hash.yml
+
+- name: Verify that the variable is a hash
+  assert:
+    that:
+      - hash_variable|type_debug == "dict"
+      - hash_variable.key1 == "value1"
+      - hash_variable.key2 == "value2"
+
+- name: Merge another vars file with a hash variable
+  include_vars:
+    file: vars2/merge/hash_merge.yml
+
+- name: Verify that the merge of hashes worked.
+  assert:
+    that:
+      - hash_variable.key1 == "value1"
+      - hash_variable.key2 == 2
+      - hash_variable.key3 == "value3"
+      - hash_variable.key4 == "value4"
+
+- name: Merge a vars file with a list variable
+  include_vars:
+    file: vars2/merge/list.yml
+
+- name: Verify that the variable is a list
+  assert:
+    that:
+      - list_variable|type_debug == "list"
+      - list_variable[0] == "value1"
+      - list_variable[1] == "value2"
+
+- name: Merge another vars file with a list variable
+  include_vars:
+    file: vars2/merge/list_merge.yml
+- name: Verify that the merge of lists worked
+  assert:
+    that:
+      - list_variable|type_debug == "list"
+      - list_variable[0] == "value1"
+      - list_variable[1] == "value2"
+      - list_variable[2] == "value3"
+      - list_variable[3] == "value4"
+
+- name: Overwrite variables, list and hash with nulls.
+  include_vars:
+    file: vars2/merge/null_values.yml
+
+- name: Verify that the value is null
+  assert:
+    that:
+      - hash_variable is defined
+      - list_variable is defined
+      - hash_variable == None
+      - list_variable == None

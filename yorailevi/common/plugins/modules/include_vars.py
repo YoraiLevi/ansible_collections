@@ -74,8 +74,8 @@ options:
   hash_behaviour:
     description:
       - If set to C(merge), merges existing hash variables instead of overwriting them.
-      - If omitted C(null), the behavior falls back to the global I(hash_behaviour) configuration.
-    default: null
+      - If set to C(null), the behavior falls back to the global I(hash_behaviour) configuration.
+    default: merge
     type: str
     choices: ["replace", "merge"]
     version_added: "2.12"
@@ -83,6 +83,17 @@ options:
     description:
       - This module allows you to specify the 'file' option directly without any other options.
       - There is no 'free-form' option, this is just an indicator, see example below.
+  list_behavior:
+    description:
+      - If set to C(append), lists are appended instead of replaced.
+      - If set to C(prepend), lists are prepended instead of replaced.
+      - If set to C(replace), lists are replaced.
+      - If set to C(keep), lists are kept.
+      - If set to C(null), if hash_behavior is C(replace) the behavior falls back to C(replace) otherwise the behavior falls back to C(append)
+    type: str
+    choices: ["replace", "keep", "append", "prepend", "append_rp", "prepend_rp"]
+    default: append
+    version_added: "yorailevi.common 1.0.0"
 extends_documentation_fragment:
     - action_common_attributes
     - action_common_attributes.conn
